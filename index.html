@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Islamic Inheritance Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 50px;
+      }
+      input,
+      button {
+        margin: 10px;
+        padding: 5px;
+      }
+      table {
+        margin-top: 20px;
+        width: 50%;
+        margin-left: auto;
+        margin-right: auto;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Islamic Inheritance Calculator</h1>
+    <label
+      >Estate Amount:
+      <input
+        type="number"
+        id="estateAmount"
+        placeholder="Enter estate value" /></label
+    ><br />
+
+    <fieldset>
+      <legend>Select the Heirs:</legend>
+      <label
+        ><input type="checkbox" id="isMotherDeceased" /> Mother is
+        deceased</label
+      >
+      <label
+        ><input type="checkbox" id="isFatherDeceased" /> Father is
+        deceased</label
+      >
+      <label><input type="checkbox" id="hasHusband" /> Husband</label>
+      <label><input type="checkbox" id="hasWife" /> Wife</label>
+      <label
+        ><input type="checkbox" id="isBrotherDeceased" /> Brother is
+        deceased</label
+      >
+      <label
+        ><input type="checkbox" id="isSisterDeceased" /> Sister is
+        deceased</label
+      >
+      <label
+        >Number of Sons: <input type="number" id="numSons" min="0" value="0"
+      /></label>
+      <label
+        >Number of Daughters:
+        <input type="number" id="numDaughters" min="0" value="0"
+      /></label>
+      <label
+        >Number of Brothers:
+        <input type="number" id="numBrothers" min="0" value="0"
+      /></label>
+      <label
+        >Number of Sisters:
+        <input type="number" id="numSisters" min="0" value="0"
+      /></label>
+    </fieldset>
+
+    <button onclick="calculateInheritance()">Calculate</button>
+    <h2>Results:</h2>
+    <table id="inheritanceResults">
+      <tr>
+        <th>Heir</th>
+        <th>Share Amount</th>
+      </tr>
+    </table>
+
+    <script>
+      function calculateInheritance() {
+        let estate = parseFloat(document.getElementById("estateAmount").value);
+        if (estate <= 0 || isNaN(estate)) {
+          alert("Please enter a valid estate amount.");
+          return;
+        }
+
+        let heirs = {};
+        let totalAllocated = 0;
+
+        let shares = {
+          mother: document.getElementById("isMotherDeceased").checked
+            ? 0
+            : document.getElementById("isFatherDeceased").checked
+            ? 1 / 3
+            : 1 / 6,
+          father: document.getElementById("isFatherDeceased").checked
+            ? 0
+            : 1 / 6,
+          husband: document.getElementById("hasHusband").checked ? 1 / 2 : 0,
+          wife: document.getElementById("hasWife").checked ? 1 / 4 : 0,
+        };
+
+        let deceasedBrother =
+          document.getElementById("isBrotherDeceased").checked;
+        let deceasedSister =
+          document.getElementById("isSisterDeceased").checked;
+        let brotherCount = parseInt(
+          document.getElementById("numBrothers").value
+        );
+        let sisterCount = parseInt(document.getElementById("numSisters").value);
+        let sonCount = parseInt(document.getElementById("numSons").value);
+        let daughterCount = parseInt(
+          document.getElementById("numDaughters").value
+        );
+
+        Object.keys(shares).forEach((heir) => {
+          heirs[heir] = estate * shares[heir];
+          totalAllocated += heirs[heir];
+        });
+
+        let remainingEstate = estate - totalAllocated;
+
+        if (sonCount + daughterCount > 0) {
+          let totalShares = sonCount * 2 + daughterCount;
+          let unitShare = remainingEstate / totalShares;
+          heirs["eachSon"] = unitShare * 2;
+          heirs["totalSons"] = heirs["eachSon"] * sonCount;
+          heirs["eachDaughter"] = unitShare;
+          heirs["totalDaughters"] = heirs["eachDaughter"] * daughterCount;
+          remainingEstate = 0;
+        } else if (brotherCount + sisterCount > 0) {
+          let totalShares = brotherCount * 2 + sisterCount;
+          let unitShare = remainingEstate / totalShares;
+          heirs["eachBrother"] = unitShare * 2;
+          heirs["totalBrothers"] = heirs["eachBrother"] * brotherCount;
+          heirs["eachSister"] = unitShare;
+          heirs["totalSisters"] = heirs["eachSister"] * sisterCount;
+          remainingEstate = 0;
+        }
+
+        let resultTable = document.getElementById("inheritanceResults");
+        resultTable.innerHTML = "<tr><th>Heir</th><th>Share Amount</th></tr>";
+
+        Object.keys(heirs).forEach((heir) => {
+          let row = document.createElement("tr");
+          row.innerHTML = `<td>${
+            heir.charAt(0).toUpperCase() + heir.slice(1)
+          }</td>
+                                <td>${heirs[heir].toFixed(2)}</td>`;
+          resultTable.appendChild(row);
+        });
+      }
+    </script>
+  </body>
+</html>
